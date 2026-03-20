@@ -9,9 +9,6 @@ export const FirebaseProvider: Provider = {
   useFactory: (configService: ConfigService) => {
     const firebaseConfig = configService.get('firebase');
     
-    console.log('Initializing Firebase with Project ID:', firebaseConfig.projectId);
-    console.log('Client Email:', firebaseConfig.clientEmail);
-
     if (!admin.apps.length) {
       admin.initializeApp({
         credential: admin.credential.cert({

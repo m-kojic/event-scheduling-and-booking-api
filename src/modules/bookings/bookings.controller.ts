@@ -1,6 +1,7 @@
-import { Controller, Post, Body, Get, Param } from '@nestjs/common';
+import { Controller, Post, Body, Get, Param, Query } from '@nestjs/common';
 import { BookingsService } from './bookings.service';
 import { CreateBookingDto } from './dto/create-booking.dto';
+import { QueryBookingsDto } from './dto/query-bookings.dto';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 
 @ApiTags('Bookings')
@@ -16,7 +17,10 @@ export class BookingsController {
 
   @Get(':userId')
   @ApiOperation({ summary: 'Get bookings by user' })
-  findByUser(@Param('userId') userId: string) {
-    return this.bookingsService.findByUser(userId);
+  findByUser(
+    @Param('userId') userId: string,
+    @Query() query: QueryBookingsDto,
+  ) {
+    return this.bookingsService.findByUser(userId, query);
   }
 }

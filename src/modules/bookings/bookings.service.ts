@@ -1,6 +1,7 @@
 import { Inject, Injectable, ConflictException, NotFoundException, InternalServerErrorException } from '@nestjs/common';
 import { FIREBASE_CONNECTION } from '../../providers/firebase.provider';
 import { CreateBookingDto } from './dto/create-booking.dto';
+import { QueryBookingsDto } from './dto/query-bookings.dto';
 import { firestore } from 'firebase-admin';
 
 @Injectable()
@@ -55,8 +56,24 @@ export class BookingsService {
     }
   }
 
-  async findByUser(userId: string) {
-    const snapshot = await this.db.collection('bookings').where('userId', '==', userId).get();
-    return snapshot.docs.map(doc => doc.data());
+  async findByUser(userId: string, queryDto: QueryBookingsDto) {
+    let query: firestore.Query = this.db.collection('bookings').where('userId', '==', userId);
+
+    query = query.orderBy('createdAt', 'desc').orderBy('id');
+
+    if (queryDto.lastId) {
+      const lastDoc = await this.db.collection('bookings').doc(queryDto.lastId).get();
+      if (lastDoc.exists) {
+        query = query.startAfter(lastDoc);
+      }
+    }
+
+    query = query.limit(queryDto.limit);
+
+    const snapshot = await query.get();
+    const items = snapshot.docs.map((doc) => doc.data());
+    const lastId = snapshot.docs.length > 0 ? snapshot.docs[snapshot.docs.length - 1].id : null;
+
+    return { items, lastId };
   }
 }

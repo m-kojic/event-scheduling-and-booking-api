@@ -30,11 +30,23 @@ export class EventsRepository {
 
     if (queryDto.date) query = query.where('date', '==', queryDto.date);
     if (queryDto.location) query = query.where('location', '==', queryDto.location);
-    
+
+    query = query.orderBy('createdAt', 'desc').orderBy('id');
+
+    if (queryDto.lastId) {
+      const lastDoc = await this.firestore.collection(this.collectionStr).doc(queryDto.lastId).get();
+      if (lastDoc.exists) {
+        query = query.startAfter(lastDoc);
+      }
+    }
+
     query = query.limit(queryDto.limit);
 
     const snapshot = await query.get();
-    return snapshot.docs.map((doc) => doc.data());
+    const items = snapshot.docs.map((doc) => doc.data());
+    const lastId = snapshot.docs.length > 0 ? snapshot.docs[snapshot.docs.length - 1].id : null;
+
+    return { items, lastId };
   }
 
   async findById(id: string) {
