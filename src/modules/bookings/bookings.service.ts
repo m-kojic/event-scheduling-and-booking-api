@@ -40,6 +40,10 @@ export class BookingsService {
           userId,
           status: 'CONFIRMED',
           createdAt: new Date(),
+          // Denormalize event details for fast retrieval in findByUser
+          eventTitle: eventData.title,
+          eventLocation: eventData.location,
+          eventDate: eventData.date,
         });
 
         transaction.update(eventRef, {

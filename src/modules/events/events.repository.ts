@@ -28,8 +28,21 @@ export class EventsRepository {
   async findAll(queryDto: QueryEventsDto) {
     let query: firestore.Query = this.firestore.collection(this.collectionStr);
 
-    if (queryDto.date) query = query.where('date', '==', queryDto.date);
-    if (queryDto.location) query = query.where('location', '==', queryDto.location);
+    if (queryDto.date) {
+      // Query with range to find events that start on the day (ignore hours)
+      // E.g. If `2026-03-25` is passed then the range will be >= 2026-03-25 and < 2026-03-26
+      const nextDay = new Date(queryDto.date);
+      nextDay.setUTCDate(nextDay.getUTCDate() + 1);
+      const nextDayStr = nextDay.toISOString().split('T')[0];
+      
+      query = query.where('date', '>=', queryDto.date).where('date', '<', nextDayStr);
+      // Firestore requires range queries to be ordered by the same field first
+      query = query.orderBy('date', 'desc');
+    }
+
+    if (queryDto.location) {
+      query = query.where('location', '==', queryDto.location);
+    }
 
     query = query.orderBy('createdAt', 'desc').orderBy('id');
 
