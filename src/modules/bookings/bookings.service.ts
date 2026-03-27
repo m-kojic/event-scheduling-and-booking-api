@@ -76,7 +76,7 @@ export class BookingsService {
 
     const snapshot = await query.get();
     const items = snapshot.docs.map((doc) => doc.data());
-    const lastId = snapshot.docs.length > 0 ? snapshot.docs[snapshot.docs.length - 1].id : null;
+    const lastId = snapshot.docs.length === queryDto.limit ? snapshot.docs[snapshot.docs.length - 1].id : null;
 
     return { items, lastId };
   }
